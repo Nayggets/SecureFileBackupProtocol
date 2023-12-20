@@ -1,27 +1,27 @@
 #include "restorer.h"
 
 
-int restorefile(int sockfd)
+int restorefile(SSL* ssl)
 {
     file_t file;
-    recv(sockfd,&file,sizeof(file),0);
-    sendfile(sockfd,file.path);
+    SSL_read(ssl,&file,sizeof(file));
+    sendfile(ssl,file.path);
     paquet_t paquet_end;
     paquet_end.type_paquet = END_OF_COMMUNICATION;
-    send(sockfd,&paquet_end,sizeof(paquet_t),0);
+    SSL_write(ssl,&paquet_end,sizeof(paquet_t));
     return 0;
 }
 
 
 
-int restorefolder(int sockfd)
+int restorefolder(SSL* ssl)
 {
 
     folder_t folder;
-    recv(sockfd,&folder,sizeof(folder),0);
-    sendfolder(sockfd,folder.path);
+    SSL_read(ssl,&folder,sizeof(folder));
+    sendfolder(ssl,folder.path);
     paquet_t paquet_end;
     paquet_end.type_paquet = END_OF_COMMUNICATION;
-    send(sockfd,&paquet_end,sizeof(paquet_t),0);
+    SSL_write(ssl,&paquet_end,sizeof(paquet_t));
     return 0;
 }

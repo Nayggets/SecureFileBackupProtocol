@@ -1,31 +1,31 @@
 #include "menu.h"
 
 
-int askforfile(int sockfd)
+int askforfile(SSL* ssl)
 {
     paquet_t paquet;
     paquet.type_paquet = FILE_RESTITUTION;
-    send(sockfd,&paquet,sizeof(paquet_t),0);
+    SSL_write(ssl,&paquet,sizeof(paquet_t));
     file_t file;
     read_line(file.path);
     printf("the path %s",file.path);
-    send(sockfd,&file,sizeof(file_t),0);
+    SSL_write(ssl,&file,sizeof(file_t));
     return 0;
 }
-int askforfolder(int sockfd)
+int askforfolder(SSL* ssl)
 {
     paquet_t paquet;
     paquet.type_paquet = FOLDER_RESTITUTION;
-    send(sockfd,&paquet,sizeof(paquet_t),0);
+    SSL_write(ssl,&paquet,sizeof(paquet_t));
     folder_t folder;
     read_line(folder.path);
     printf("the path %s",folder.path);
-    send(sockfd,&folder,sizeof(folder_t),0);
+    SSL_write(ssl,&folder,sizeof(folder_t));
     return 0;
 }
 
 
-void menu(int sockfd)
+void menu(SSL* ssl)
 {
     char number[2];
     char path[PATH_MAX];
@@ -33,8 +33,8 @@ void menu(int sockfd)
     while(atoi(number) != QUIT)
     {
         printf("what do you want to do?\n");
-        printf("Send file          1.\n");
-        printf("Send folder        2.\n");
+        printf("send file          1.\n");
+        printf("send folder        2.\n");
         printf("Restitute a file   3.\n");
         printf("Restitute a folder 4.\n");
         printf("Quit               5.\n");
@@ -50,27 +50,27 @@ void menu(int sockfd)
                 printf("Enter the path of the fichier : ");
                 fflush(stdout);
                 read_line(path);
-                sendfile(sockfd,path);
+                sendfile(ssl,path);
                 break;
             }
             case SEND_FOLDER:
             {
                 printf("Enter the path of the folder : ");
                 read_line(path);
-                sendfolder(sockfd,path);
+                sendfolder(ssl,path);
                 break;
             }
             case RESTITUTE_FILE:
             {
-                askforfile(sockfd);
-                receivestation(sockfd,1);
+                askforfile(ssl);
+                receivestation(ssl,1);
 
                 break;
             }
             case RESTITUTE_FOLDER:
             {
-                askforfolder(sockfd);
-                receivestation(sockfd,1);
+                askforfolder(ssl);
+                receivestation(ssl,1);
 
                 break;
             }
@@ -78,7 +78,7 @@ void menu(int sockfd)
             {
                 paquet_t end;
                 end.type_paquet = END_OF_COMMUNICATION;
-                send(sockfd,&end,sizeof(paquet_t),0);
+                SSL_write(ssl,&end,sizeof(paquet_t));
                 printf("application quited\n");
                 break;
             }

@@ -73,11 +73,11 @@ int cleanfilter()
 
 
 
-int sendfile(int sockfd,char* path)
+int sendfile(SSL* ssl,char* path)
 {
     paquet_t paquet;
     paquet.type_paquet = FILE_PAQUET;
-    send(sockfd,&paquet,sizeof(paquet),0);
+    SSL_write(ssl,&paquet,sizeof(paquet));
     printf("Fichier en cour d'envois : %s\n", path);
     file_t file;
     memcpy(file.path,path,PATH_MAX);
@@ -98,19 +98,19 @@ int sendfile(int sockfd,char* path)
 
     file.file_size = size;
     int read_size = -1;
-    send(sockfd,&file,sizeof(file_t),0);
+    SSL_write(ssl,&file,sizeof(file_t));
         char buffer[4096];
 
     while(read_size != 0){
         read_size = read(fd,buffer,4096);
-        send(sockfd,buffer,read_size,0);
+        SSL_write(ssl,buffer,read_size);
     }
 
     close(fd);
     return 0;
 }
 
-int sendfolder(int sockfd,char* path)
+int sendfolder(SSL* ssl,char* path)
 {
     struct dirent *dir;
     // opendir() renvoie un pointeur de type DIR. 
@@ -118,11 +118,11 @@ int sendfolder(int sockfd,char* path)
     printf("directory open %s\n",path);
     paquet_t paquet;
     paquet.type_paquet = FOLDER_PAQUET;
-    send(sockfd,&paquet,sizeof(paquet),0);
+    SSL_write(ssl,&paquet,sizeof(paquet));
 
     folder_t folder;
     memcpy(folder.path,path,PATH_MAX);
-    send(sockfd,&folder,sizeof(folder),0);
+    SSL_write(ssl,&folder,sizeof(folder));
 
     char realPath[PATH_MAX];
     int size = strlen(path);
@@ -140,11 +140,11 @@ int sendfolder(int sockfd,char* path)
 
                 if(isdirectory(realPath)){
                     memcpy(realPath+size+strlen(dir->d_name),"/",1);
-                    sendfolder(sockfd,realPath);
+                    sendfolder(ssl,realPath);
                 }
                 else{
                     if(filter(dir->d_name,strlen(dir->d_name))){
-                        sendfile(sockfd,realPath);
+                        sendfile(ssl,realPath);
                     }
                 }
                 printf("%s\n", dir->d_name);

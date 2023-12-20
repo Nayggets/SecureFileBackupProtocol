@@ -4,6 +4,6 @@
 void initfilter();
 int cleanfilter();
 
-int sendfile(int sockfd,char* path);
+int sendfile(SSL* ssl,char* path);
 
-int sendfolder(int sockfd,char* path);
+int sendfolder(SSL* ssl,char* path);

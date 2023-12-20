@@ -1,10 +1,10 @@
 #include "receiver.h"
-int receivestation(int sockfd,int in_restoration)
+int receivestation(SSL* ssl,int in_restoration)
 {
     paquet_t paquet;
     paquet.type_paquet = 0;
     int check = 0;
-    check = recv(sockfd,&paquet,sizeof(paquet_t),0);
+    check = SSL_read(ssl,&paquet,sizeof(paquet_t));
     if(check <= 0){
         return -1;
     }
@@ -13,26 +13,26 @@ int receivestation(int sockfd,int in_restoration)
         {
             case FILE_PAQUET:
             {
-                receivefile(sockfd,in_restoration);
+                receivefile(ssl,in_restoration);
                 break;
             }
             case FOLDER_PAQUET:
             {
-                receivefolder(sockfd);
+                receivefolder(ssl);
                 break;
             }
             case FILE_RESTITUTION:
             {
-                restorefile(sockfd);
+                restorefile(ssl);
                 break;
             }
             case FOLDER_RESTITUTION:
             {
-                restorefolder(sockfd);
+                restorefolder(ssl);
                 break;
             }
         }
-        check = recv(sockfd,&paquet,sizeof(paquet_t),0);
+        check = SSL_read(ssl,&paquet,sizeof(paquet_t));
         if(check <= 0){
             return -1;
         }
@@ -57,10 +57,10 @@ int file_exists_and_no_mod (file_t* file) {
 
 
 
-int receivefile(int sockfd,int in_restoration)
+int receivefile(SSL* ssl,int in_restoration)
 {
     file_t file_received;
-    int check = recv(sockfd,&file_received,sizeof(file_t),0);
+    int check = SSL_read(ssl,&file_received,sizeof(file_t));
     if(check <= 0){
         return -1;
     }
@@ -80,13 +80,13 @@ int receivefile(int sockfd,int in_restoration)
         do {
             diff = file_received.file_size - total_readed_byte;
             if(diff > 4096){
-                readed_byte = recv(sockfd,file_data_buffer,4096,0);
+                readed_byte = SSL_read(ssl,file_data_buffer,4096);
                 if(readed_byte <= 0){
                     return -1;
                 }
             }
             else{
-                readed_byte = recv(sockfd,file_data_buffer,diff,0);
+                readed_byte = SSL_read(ssl,file_data_buffer,diff);
                 if(readed_byte <= 0){
                     return -1;
                 }
@@ -111,10 +111,10 @@ int receivefile(int sockfd,int in_restoration)
         do {
             diff = file_received.file_size - total_readed_byte;
             if(diff > 4096){
-                readed_byte = recv(sockfd,file_data_buffer,4096,0);
+                readed_byte = SSL_read(ssl,file_data_buffer,4096);
             }
             else{
-                readed_byte = recv(sockfd,file_data_buffer,diff,0);
+                readed_byte = SSL_read(ssl,file_data_buffer,diff);
             }
             total_readed_byte += readed_byte;
 
@@ -125,10 +125,10 @@ int receivefile(int sockfd,int in_restoration)
     return 0;
 }
 
-int receivefolder(int sockfd)
+int receivefolder(SSL* ssl)
 {
     folder_t folder_receive;
-    recv(sockfd,&folder_receive,sizeof(folder_t),0);
+    SSL_read(ssl,&folder_receive,sizeof(folder_t));
     mkdir(folder_receive.path,0700);
     return 0;
 }

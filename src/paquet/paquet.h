@@ -5,6 +5,8 @@
 #include <time.h>
 typedef unsigned char byte;
 
+//Command pattern 
+
 typedef enum paquet_type
 {
     FILE_PAQUET = 0x00,
@@ -16,9 +18,11 @@ typedef enum paquet_type
     
 }paquet_type_t;
 
+
 typedef struct paquet
 {
     int type_paquet;
+    
 } paquet_t;
 
 typedef struct file  
@@ -33,6 +37,8 @@ typedef struct folder
     char path[PATH_MAX];
 } folder_t;
 
+
+//error code not implemented anymore
 typedef enum error_code
 {
     FOLDER_NOT_EXIST = 0x00,

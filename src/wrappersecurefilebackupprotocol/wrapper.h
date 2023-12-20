@@ -12,8 +12,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <openssl/ssl.h>
+
 #include "./receiver/receiver.h"
 #include "./sender/sender.h"
+
 #include "./restorer/restorer.h"
 #include "../paquet/paquet.h"
 

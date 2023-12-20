@@ -4,10 +4,10 @@ CC = gcc
 C_VERSION = -std=gnu18
 C_OPTIMISE_FLAGS = -pedantic -O3 
 C_WARNING_FLAGS = -Wall -Werror
-C_EXTERNE_LIBRARY_FLAGS = -pthread
+C_EXTERNE_LIBRARY_FLAGS = -lssl -lcrypto
 C_DEBUG_FLAGS = -g
-SERVER_APP_NAME = ./build/server.elf
-CLIENT_APP_NAME = ./build/client.elf
+SERVER_APP_NAME = ./build/server/server.elf
+CLIENT_APP_NAME = ./build/client/client.elf
 #Source files
 SOURCES_FILES_CLIENT = ./src/main/clientmain.c \
 					   ./src/wrappersecurefilebackupprotocol/receiver/receiver.c \

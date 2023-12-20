@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
-
+/build/client/Project/
+/build/server/Project/
+.pem
+.crt
+.key
 # Object files
 *.o
 *.ko

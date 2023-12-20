@@ -2,9 +2,9 @@
 #define __RECEIVER_H
 #include "../wrapper.h"
 
-int receivestation(int sockfd,int in_restoration);
+int receivestation(SSL* ssl,int in_restoration);
 
-int receivefile(int sockfd,int in_restoration);
-int receivefolder(int sockfd);
+int receivefile(SSL* ssl,int in_restoration);
+int receivefolder(SSL* ssl);
 
 #endif

@@ -3,8 +3,8 @@
 
 #include "../wrapper.h"
 
-int restorefile(int sockfd);
-int restorefolder(int sockfd);
+int restorefile(SSL* ssl);
+int restorefolder(SSL* ssl);
 
 
 #endif
