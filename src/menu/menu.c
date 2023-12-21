@@ -24,12 +24,39 @@ int askforfolder(SSL* ssl)
     return 0;
 }
 
+int file_exists (char *filename) {
+  struct stat   buffer;   
+  return (stat (filename, &buffer) == 0);
+}
 
-void menu(SSL* ssl)
+
+void menu(sfbp_session_t* sfbp_session)
 {
+    int check = 0;
+    printf("HERE\n");
+    fflush(stdout);
+    unsigned char* key;
+    if(!file_exists("userkey.key")){
+        printf("Entrer une phrase attention il faut vous souvenir de cette phrase en cas de changement de machine ou remise a 0 de cette dernière : ");
+        fflush(stdout);
+        char message[256];
+        int size = read(1,message,256);
+        message[size] = '\0';
+        digest_message((unsigned char*)message,29,&key,(unsigned int*)&size);
+        int fd = open("userkey.key",O_WRONLY | O_CREAT,0700);
+        check = write(fd,key,32);
+    }
+    else{
+        key = malloc(sizeof(unsigned char) * 32);
+        int fd = open("userkey.key",O_RDONLY);
+        check = read(fd,key,32);
+    }
+    //unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+    //                      0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
+    //                    };
+
     char number[2];
     char path[PATH_MAX];
-    int check = 0;
     while(atoi(number) != QUIT)
     {
         printf("what do you want to do?\n");
@@ -50,27 +77,27 @@ void menu(SSL* ssl)
                 printf("Enter the path of the fichier : ");
                 fflush(stdout);
                 read_line(path);
-                sendfile(ssl,path);
+                sendfile(sfbp_session,path);
                 break;
             }
             case SEND_FOLDER:
             {
                 printf("Enter the path of the folder : ");
                 read_line(path);
-                sendfolder(ssl,path);
+                sendfolder(sfbp_session,path);
                 break;
             }
             case RESTITUTE_FILE:
             {
-                askforfile(ssl);
-                receivestation(ssl,1);
+                askforfile(sfbp_session->ssl);
+                receivestation(sfbp_session,1);
 
                 break;
             }
             case RESTITUTE_FOLDER:
             {
-                askforfolder(ssl);
-                receivestation(ssl,1);
+                askforfolder(sfbp_session->ssl);
+                receivestation(sfbp_session,1);
 
                 break;
             }
@@ -78,7 +105,7 @@ void menu(SSL* ssl)
             {
                 paquet_t end;
                 end.type_paquet = END_OF_COMMUNICATION;
-                SSL_write(ssl,&end,sizeof(paquet_t));
+                SSL_write(sfbp_session->ssl,&end,sizeof(paquet_t));
                 printf("application quited\n");
                 break;
             }

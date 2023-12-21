@@ -4,6 +4,6 @@
 void initfilter();
 int cleanfilter();
 
-int sendfile(SSL* ssl,char* path);
+int sendfile(sfbp_session_t* ssl,char* path);
 
-int sendfolder(SSL* ssl,char* path);
+int sendfolder(sfbp_session_t* ssl,char* path);

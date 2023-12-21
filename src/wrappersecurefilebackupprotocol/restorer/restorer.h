@@ -3,8 +3,8 @@
 
 #include "../wrapper.h"
 
-int restorefile(SSL* ssl);
-int restorefolder(SSL* ssl);
+int restorefile(sfbp_session_t* sfbp_session);
+int restorefolder(sfbp_session_t* sfbp_session);
 
 
 #endif

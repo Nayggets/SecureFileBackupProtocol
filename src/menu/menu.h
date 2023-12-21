@@ -3,11 +3,12 @@
 
 #include "../wrappersecurefilebackupprotocol/wrapper.h"
 #include "../reader/reader.h"
+#include "../crypto/sha/sha.h"
 #include <openssl/ssl.h>
 
 #define PORT 9500
 
-void menu(SSL* ssl);
+void menu(sfbp_session_t* sfbp_session);
 
 typedef enum action
 {

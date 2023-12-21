@@ -14,6 +14,13 @@
 #include <dirent.h>
 #include <openssl/ssl.h>
 
+typedef struct sfbp_session
+{
+    SSL* ssl;
+    unsigned char* key;
+    unsigned char* iv;
+}sfbp_session_t;
+
 #include "./receiver/receiver.h"
 #include "./sender/sender.h"
 

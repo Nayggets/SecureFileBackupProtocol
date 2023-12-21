@@ -2,9 +2,9 @@
 #define __RECEIVER_H
 #include "../wrapper.h"
 
-int receivestation(SSL* ssl,int in_restoration);
+int receivestation(sfbp_session_t* sfbp_session,int in_restoration);
 
-int receivefile(SSL* ssl,int in_restoration);
-int receivefolder(SSL* ssl);
+int receivefile(sfbp_session_t* sfbp_session,int in_restoration);
+int receivefolder(sfbp_session_t* sfbp_session);
 
 #endif

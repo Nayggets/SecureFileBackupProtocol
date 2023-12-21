@@ -71,15 +71,33 @@ int cleanfilter()
 }
 
 
-
-
-int sendfile(SSL* ssl,char* path)
+int gettime(char* path,file_t* file)
 {
+
+    struct stat   buffer;   
+    if(stat (path, &buffer) != 0){
+
+        return -1;
+    }
+    else{
+        file->last_mod = buffer.st_mtime;
+        return 0;
+    }
+
+}
+
+int sendfile(sfbp_session_t* sfbp_session,char* path)
+{
+    file_t file;
+
+    if(gettime(path,&file) != 0){
+        printf("Fichier non existant %s \n",path);
+        return -1;
+    }
     paquet_t paquet;
     paquet.type_paquet = FILE_PAQUET;
-    SSL_write(ssl,&paquet,sizeof(paquet));
+    SSL_write(sfbp_session->ssl,&paquet,sizeof(paquet));
     printf("Fichier en cour d'envois : %s\n", path);
-    file_t file;
     memcpy(file.path,path,PATH_MAX);
     int fd = open(path,O_RDONLY);
     if(fd == -1){
@@ -97,20 +115,21 @@ int sendfile(SSL* ssl,char* path)
     lseek(fd,0,SEEK_SET);
 
     file.file_size = size;
+
     int read_size = -1;
-    SSL_write(ssl,&file,sizeof(file_t));
+    SSL_write(sfbp_session->ssl,&file,sizeof(file_t));
         char buffer[4096];
 
     while(read_size != 0){
         read_size = read(fd,buffer,4096);
-        SSL_write(ssl,buffer,read_size);
+        SSL_write(sfbp_session->ssl,buffer,read_size);
     }
 
     close(fd);
     return 0;
 }
 
-int sendfolder(SSL* ssl,char* path)
+int sendfolder(sfbp_session_t* sfbp_session,char* path)
 {
     struct dirent *dir;
     // opendir() renvoie un pointeur de type DIR. 
@@ -118,11 +137,11 @@ int sendfolder(SSL* ssl,char* path)
     printf("directory open %s\n",path);
     paquet_t paquet;
     paquet.type_paquet = FOLDER_PAQUET;
-    SSL_write(ssl,&paquet,sizeof(paquet));
+    SSL_write(sfbp_session->ssl,&paquet,sizeof(paquet));
 
     folder_t folder;
     memcpy(folder.path,path,PATH_MAX);
-    SSL_write(ssl,&folder,sizeof(folder));
+    SSL_write(sfbp_session->ssl,&folder,sizeof(folder));
 
     char realPath[PATH_MAX];
     int size = strlen(path);
@@ -140,11 +159,11 @@ int sendfolder(SSL* ssl,char* path)
 
                 if(isdirectory(realPath)){
                     memcpy(realPath+size+strlen(dir->d_name),"/",1);
-                    sendfolder(ssl,realPath);
+                    sendfolder(sfbp_session,realPath);
                 }
                 else{
                     if(filter(dir->d_name,strlen(dir->d_name))){
-                        sendfile(ssl,realPath);
+                        sendfile(sfbp_session,realPath);
                     }
                 }
                 printf("%s\n", dir->d_name);

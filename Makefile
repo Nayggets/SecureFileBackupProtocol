@@ -14,6 +14,8 @@ SOURCES_FILES_CLIENT = ./src/main/clientmain.c \
 					   ./src/wrappersecurefilebackupprotocol/sender/sender.c \
 					   	./src/wrappersecurefilebackupprotocol/restorer/restorer.c \
 					   ./src/reader/reader.c \
+					   ./src/crypto/aes/aes.c \
+					   ./src/crypto/sha/sha.c \
 					   ./src/menu/menu.c 
 
 SOURCES_FILES_SERVER = ./src/main/servermain.c \

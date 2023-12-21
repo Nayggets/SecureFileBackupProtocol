@@ -8,8 +8,8 @@ int main()
     int sockfd, connfd, len; 
     struct sockaddr_in servaddr, cli; 
     SSL_CTX *ctx;
-    SSL *ssl;
-
+    //SSL *ssl;   
+    sfbp_session_t sfbp_session;
  
 
     /* Create a TLS server context with certificates */
@@ -57,10 +57,11 @@ int main()
     int check = 0;
     while(1)
     {
+        
         connfd = accept(sockfd, (struct sockaddr *)&cli,(socklen_t*) &len); 
-        ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, connfd);
-        check = SSL_accept(ssl);
+        sfbp_session.ssl = SSL_new(ctx);
+        SSL_set_fd(sfbp_session.ssl, connfd);
+        check = SSL_accept(sfbp_session.ssl);
 
         if (connfd < 0) { 
             printf("server accept failed...\n"); 
@@ -71,7 +72,7 @@ int main()
                 printf("server accept the client...\n"); 
                 pid_t pid = fork();
                 if(pid == 0){
-                    receivestation(ssl,0);
+                    receivestation(&sfbp_session,0);
                     printf("Client left\n");
                     exit(0);
                 }
@@ -79,7 +80,7 @@ int main()
             else{
                 printf("Problème lié a ssl abandon du client");
                 close(connfd);
-                    SSL_free(ssl);
+                    SSL_free(sfbp_session.ssl);
 
     
             }
