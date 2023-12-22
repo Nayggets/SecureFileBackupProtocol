@@ -86,6 +86,9 @@ int gettime(char* path,file_t* file)
 
 }
 
+
+
+
 int sendfile(sfbp_session_t* sfbp_session,char* path)
 {
     file_t file;
@@ -114,33 +117,97 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
     }
     lseek(fd,0,SEEK_SET);
 
-    file.file_size = size;
+
+
+            /*
+            if(size < 16){
+                file.file_size = 16;
+            }
+            else{
+                file.file_size = size + (((size / 4096)) * 16);
+                file.file_size += (16 - file.file_size % 16);
+                printf("size %ld + size / 4096 * 16 %ld + size modulo 16 %ld file crypt : %ld",size,(size/4096)*16,size%16,file.file_size);
+            }
+            file.file_size = size;
+
+            printf("file size : %ld",file.file_size);
+            fflush(stdout);
+            */
+    if(sfbp_session->cryption_active == 1 && size != 0){
+        file.file_size = size + ((size / 4096)* 16);
+        if(file.file_size % 16 == 0){
+            file.file_size++;
+        }
+        while(file.file_size % 16 != 0){
+            file.file_size++;
+        }
+        printf("Size : %ld\n",file.file_size);
+
+    }
+    else{
+        file.file_size = size;
+
+    }
 
     int read_size = -1;
     SSL_write(sfbp_session->ssl,&file,sizeof(file_t));
-        char buffer[4096];
+        unsigned char buffer[4112];
+        unsigned char cipher_buffer[4112];
 
+        int cipher_length = 0;
+        int total_size = 0;
     while(read_size != 0){
-        read_size = read(fd,buffer,4096);
-        SSL_write(sfbp_session->ssl,buffer,read_size);
-    }
+        if(sfbp_session->cryption_active == 1){
+            read_size = read(fd,buffer,4096);
+            if(read_size > 0){
+                printf("Cryption launch\n\r");
+                printf("read_size %d\n\r",read_size);
+                //while(read_size % 32 != 0){
+                //  buffer[read_size] = 0;
+                // read_size++;
+                //}
+                cipher_length = encrypt(buffer,read_size,sfbp_session->key,sfbp_session->iv,cipher_buffer);
+                printf("cipher length : %d\r\n",cipher_length);
+                total_size += cipher_length;
+                int check = SSL_write(sfbp_session->ssl,cipher_buffer,cipher_length);
+                if(check <= 0){
+                    perror("write");
+                }
+            }
 
+        }
+        else{
+            read_size = read(fd,buffer,4112);
+            if(read_size > 0){
+                printf("Not cryption\n\r");
+                int check = SSL_write(sfbp_session->ssl,buffer,read_size);
+                if(check <= 0){
+                    perror("write");
+                }
+            }
+
+        }
+    }
+    printf("%d",total_size);
+    fflush(stdout);
     close(fd);
     return 0;
 }
 
 int sendfolder(sfbp_session_t* sfbp_session,char* path)
 {
+
     struct dirent *dir;
     // opendir() renvoie un pointeur de type DIR. 
     DIR *d = opendir(path); 
-    printf("directory open %s\n",path);
+    printf("directory open %s\n\r",path);
     paquet_t paquet;
     paquet.type_paquet = FOLDER_PAQUET;
     SSL_write(sfbp_session->ssl,&paquet,sizeof(paquet));
-
     folder_t folder;
     memcpy(folder.path,path,PATH_MAX);
+    printf("directory send %s\n\r",folder.path);
+
     SSL_write(sfbp_session->ssl,&folder,sizeof(folder));
 
     char realPath[PATH_MAX];

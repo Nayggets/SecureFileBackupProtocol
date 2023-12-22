@@ -21,7 +21,7 @@ typedef enum paquet_type
 
 typedef struct paquet
 {
-    int type_paquet;
+    unsigned char type_paquet;
     
 } paquet_t;
 

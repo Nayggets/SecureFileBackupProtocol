@@ -22,6 +22,8 @@ SOURCES_FILES_SERVER = ./src/main/servermain.c \
 					   ./src/wrappersecurefilebackupprotocol/receiver/receiver.c \
 					   ./src/wrappersecurefilebackupprotocol/sender/sender.c \
 					   	./src/wrappersecurefilebackupprotocol/restorer/restorer.c \
+						./src/crypto/aes/aes.c \
+					   ./src/crypto/sha/sha.c 
 						
 
 

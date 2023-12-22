@@ -35,26 +35,25 @@ void menu(sfbp_session_t* sfbp_session)
     int check = 0;
     printf("HERE\n");
     fflush(stdout);
-    unsigned char* key;
     if(!file_exists("userkey.key")){
         printf("Entrer une phrase attention il faut vous souvenir de cette phrase en cas de changement de machine ou remise a 0 de cette dernière : ");
         fflush(stdout);
         char message[256];
         int size = read(1,message,256);
         message[size] = '\0';
-        digest_message((unsigned char*)message,29,&key,(unsigned int*)&size);
+        digest_message((unsigned char*)message,29,(unsigned char**)&sfbp_session->key,(unsigned int*)&size);
         int fd = open("userkey.key",O_WRONLY | O_CREAT,0700);
-        check = write(fd,key,32);
+        check = write(fd,sfbp_session->key,32);
     }
     else{
-        key = malloc(sizeof(unsigned char) * 32);
         int fd = open("userkey.key",O_RDONLY);
-        check = read(fd,key,32);
+        check = read(fd,sfbp_session->key,32);
     }
-    //unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-    //                      0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
-    //                    };
-
+    unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
+                        };
+    memcpy(sfbp_session->iv,iv,16);
+    sfbp_session->cryption_active = 1;
     char number[2];
     char path[PATH_MAX];
     while(atoi(number) != QUIT)

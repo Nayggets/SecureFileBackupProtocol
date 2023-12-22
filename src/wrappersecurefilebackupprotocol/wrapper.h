@@ -13,12 +13,13 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <openssl/ssl.h>
-
+#include "../crypto/aes/aes.h"
 typedef struct sfbp_session
 {
     SSL* ssl;
-    unsigned char* key;
-    unsigned char* iv;
+    unsigned char key[32];
+    unsigned char iv[16];
+    int cryption_active;
 }sfbp_session_t;
 
 #include "./receiver/receiver.h"

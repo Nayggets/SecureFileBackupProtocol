@@ -62,6 +62,7 @@ int main()
         sfbp_session.ssl = SSL_new(ctx);
         SSL_set_fd(sfbp_session.ssl, connfd);
         check = SSL_accept(sfbp_session.ssl);
+        sfbp_session.cryption_active = 0;
 
         if (connfd < 0) { 
             printf("server accept failed...\n"); 
