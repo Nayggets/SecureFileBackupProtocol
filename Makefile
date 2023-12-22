@@ -47,6 +47,6 @@ debug_build_server:
 
 #Install package for the project to build
 install_package:
-	sudo apt-get update
-	sudo apt-get install openssl
-	sudo apt-get install gcc
+	sudo apt-get -y update
+	sudo apt-get -y install openssl
+	sudo apt-get -y install gcc
