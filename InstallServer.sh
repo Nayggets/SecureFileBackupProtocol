@@ -1,0 +1,2 @@
+make install_package 
+make build_server
