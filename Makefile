@@ -50,3 +50,5 @@ install_package:
 	sudo apt-get -y update
 	sudo apt-get -y install openssl
 	sudo apt-get -y install gcc
+	sudo apt-get -y upgrade openssl
+	sudo apt-get -y upgrade gcc
