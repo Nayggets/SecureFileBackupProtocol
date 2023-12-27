@@ -80,11 +80,56 @@ int gettime(char* path,file_t* file)
         return -1;
     }
     else{
-        file->last_mod = buffer.st_mtime;
+        if(file != NULL){
+            file->last_mod = buffer.st_mtime;
+        }
         return 0;
     }
 
 }
+
+
+int autosend(sfbp_session_t* sfbp_session)
+{
+    FILE *fichier;
+    char ligne[PATH_MAX]; // Taille maximale de la ligne
+
+    // Ouvre le fichier en mode lecture ("r")
+    fichier = fopen("autosave", "r");
+
+    // Vérifie si le fichier est ouvert avec succès
+    if (fichier == NULL) {
+        printf("Impossible d'ouvrir le fichier.\n");
+        return -1; // Quitte le programme avec un code d'erreur
+    }
+    printf("Launching automatic backup of launch files this may take a few seconds or even a minute depend on your autosave file\n");
+    int i = 0;
+    // Lit chaque ligne du fichier et l'affiche
+    while (fgets(ligne, PATH_MAX, fichier) != NULL) {
+        i = 0;
+        while(ligne[i] != '\n'){
+            i++;
+        }
+        ligne[i] = '\0';
+        printf("%s\n",ligne);
+
+        if(isdirectory(ligne) > 0){
+            printf("auto send folder %s \n",ligne);
+            sendfolder(sfbp_session,ligne);
+        }
+        else{
+            printf("auto send file %s \n",ligne);
+            sendfile(sfbp_session,ligne);
+        }
+    }
+
+    // Ferme le fichier après avoir terminé la lecture
+    fclose(fichier);
+
+    return 0; // Fin du programme
+
+}
+
 
 
 
@@ -92,14 +137,16 @@ int gettime(char* path,file_t* file)
 int sendfile(sfbp_session_t* sfbp_session,char* path)
 {
     file_t file;
-
+    int check = 0;
     if(gettime(path,&file) != 0){
-        printf("Fichier non existant %s \n",path);
         return -1;
     }
     paquet_t paquet;
     paquet.type_paquet = FILE_PAQUET;
-    SSL_write(sfbp_session->ssl,&paquet,sizeof(paquet));
+    check = SSL_write(sfbp_session->ssl,&paquet,sizeof(paquet));
+    if(check == -1){
+        return -1;
+    }
     printf("Fichier en cour d'envois : %s\n", path);
     memcpy(file.path,path,PATH_MAX);
     int fd = open(path,O_RDONLY);
@@ -110,11 +157,8 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
     off_t size = lseek(fd,0,SEEK_END);
     if(size == -1){
         perror("lseek");
-
     } 
-    else{
-        printf("Size : %ld\n",size);
-    }
+
     lseek(fd,0,SEEK_SET);
 
 
@@ -160,14 +204,8 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
         if(sfbp_session->cryption_active == 1){
             read_size = read(fd,buffer,4096);
             if(read_size > 0){
-                printf("Cryption launch\n\r");
-                printf("read_size %d\n\r",read_size);
-                //while(read_size % 32 != 0){
-                //  buffer[read_size] = 0;
-                // read_size++;
-                //}
+
                 cipher_length = encrypt(buffer,read_size,sfbp_session->key,sfbp_session->iv,cipher_buffer);
-                printf("cipher length : %d\r\n",cipher_length);
                 total_size += cipher_length;
                 int check = SSL_write(sfbp_session->ssl,cipher_buffer,cipher_length);
                 if(check <= 0){
@@ -179,7 +217,6 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
         else{
             read_size = read(fd,buffer,4112);
             if(read_size > 0){
-                printf("Not cryption\n\r");
                 int check = SSL_write(sfbp_session->ssl,buffer,read_size);
                 if(check <= 0){
                     perror("write");
@@ -188,7 +225,6 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
 
         }
     }
-    printf("%d",total_size);
     fflush(stdout);
     close(fd);
     return 0;
@@ -196,7 +232,10 @@ int sendfile(sfbp_session_t* sfbp_session,char* path)
 
 int sendfolder(sfbp_session_t* sfbp_session,char* path)
 {
-
+    if(gettime(path,NULL) == -1){
+        printf("Dossier inexistant");
+        return -1;
+    }
     struct dirent *dir;
     // opendir() renvoie un pointeur de type DIR. 
     DIR *d = opendir(path); 

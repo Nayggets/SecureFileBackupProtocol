@@ -9,21 +9,22 @@ C_DEBUG_FLAGS = -g
 SERVER_APP_NAME = ./build/server/server.elf
 CLIENT_APP_NAME = ./build/client/client.elf
 #Source files
-SOURCES_FILES_CLIENT = ./src/main/clientmain.c \
-					   ./src/wrappersecurefilebackupprotocol/receiver/receiver.c \
-					   ./src/wrappersecurefilebackupprotocol/sender/sender.c \
+SOURCES_FILES_CLIENT = 	./src/main/clientmain.c \
+					   	./src/wrappersecurefilebackupprotocol/receiver/receiver.c \
+					   	./src/wrappersecurefilebackupprotocol/sender/sender.c \
 					   	./src/wrappersecurefilebackupprotocol/restorer/restorer.c \
-					   ./src/reader/reader.c \
-					   ./src/crypto/aes/aes.c \
-					   ./src/crypto/sha/sha.c \
-					   ./src/menu/menu.c 
+					   	./src/reader/reader.c \
+					   	./src/crypto/aes/aes.c \
+					   	./src/crypto/sha/sha.c \
+					   	./src/menu/menu.c 
 
-SOURCES_FILES_SERVER = ./src/main/servermain.c \
-					   ./src/wrappersecurefilebackupprotocol/receiver/receiver.c \
-					   ./src/wrappersecurefilebackupprotocol/sender/sender.c \
-					   	./src/wrappersecurefilebackupprotocol/restorer/restorer.c \
+SOURCES_FILES_SERVER = 	./src/main/servermain.c \
+					   	./src/wrappersecurefilebackupprotocol/receiver/receiver.c \
+					   	./src/wrappersecurefilebackupprotocol/sender/sender.c \
+						./src/wrappersecurefilebackupprotocol/restorer/restorer.c \
 						./src/crypto/aes/aes.c \
-					   ./src/crypto/sha/sha.c 
+						./src/time/logtime.c \
+					   	./src/crypto/sha/sha.c 
 						
 
 

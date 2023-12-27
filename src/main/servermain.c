@@ -1,10 +1,19 @@
 #include "../wrappersecurefilebackupprotocol/wrapper.h"
 #include <openssl/ssl.h>
+#include "../time/logtime.h"
 #define PORT 9500
 
+time_t now;
 
 int main() 
 {
+    now = time(NULL);
+    int fd = open("./serverSauvegarde.log",O_WRONLY | O_CREAT ,0666);
+    lseek(fd,0,SEEK_END);
+
+    if(dup2(fd,STDOUT_FILENO) == -1){
+        printf("[%s] : fail de redirection des logs\n",actualtime());
+    }
     int sockfd, connfd, len; 
     struct sockaddr_in servaddr, cli; 
     SSL_CTX *ctx;
@@ -24,11 +33,11 @@ int main()
     // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
-        printf("socket creation failed...\n"); 
+        printf("[%s] : socket creation failed...\n",actualtime()); 
         exit(0); 
     } 
     else
-        printf("Socket successfully created..\n"); 
+        printf("[%s] : Socket successfully created..\n",actualtime()); 
     bzero(&servaddr, sizeof(servaddr)); 
    
     // assign IP, PORT 
@@ -38,21 +47,21 @@ int main()
    
     // Binding newly created socket to given IP and verification 
     if ((bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) != 0) { 
-        printf("socket bind failed...\n"); 
+        printf("[%s] : Socket bind failed...\n",actualtime()); 
         exit(0); 
     } 
     else
-        printf("Socket successfully binded..\n"); 
+        printf("[%s] : Socket successfully binded..\n",actualtime()); 
    
     // Now server is ready to listen and verification 
     if ((listen(sockfd, 5)) != 0) { 
-        printf("Listen failed...\n"); 
+        printf("[%s] : Listen failed...\n",actualtime()); 
         exit(0); 
     } 
     else
-        printf("Server listening..\n"); 
+        printf("[%s] Server listening..\n",actualtime()); 
     len = sizeof(cli); 
-   
+
     // Accept the data packet from client and verification 
     int check = 0;
     while(1)
@@ -65,21 +74,21 @@ int main()
         sfbp_session.cryption_active = 0;
 
         if (connfd < 0) { 
-            printf("server accept failed...\n"); 
+            printf("[%s] Server accept failed...\n",actualtime()); 
             exit(0); 
         } 
         else{
             if(check == 1){
-                printf("server accept the client...\n"); 
+                printf("[%s] : server accept the client...\n",actualtime()); 
                 pid_t pid = fork();
                 if(pid == 0){
                     receivestation(&sfbp_session,0);
-                    printf("Client left\n");
+                    printf("[%s] : Client left\n",actualtime());
                     exit(0);
                 }
             }
             else{
-                printf("Problème lié a ssl abandon du client");
+                printf("[%s] : Problème lié a ssl abandon du client",actualtime());
                 close(connfd);
                     SSL_free(sfbp_session.ssl);
 

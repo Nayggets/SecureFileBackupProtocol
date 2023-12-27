@@ -5,7 +5,6 @@
 
 
 
-
 int main()
 {
     int sockfd;
@@ -29,10 +28,12 @@ int main()
  
     // assign IP, PORT
     servaddr.sin_family = AF_INET;
-    //char IP[15];
-    //printf("Rentrez l'ip : ");
-    //int ip_size = read(1,IP,15);
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    char IP[15];
+    printf("Rentrez l'ip : ");
+    fflush(stdout);
+    int ip_size = read(1,IP,15);
+    IP[ip_size] = '\0';
+    servaddr.sin_addr.s_addr = inet_addr(IP);
     servaddr.sin_port = htons(PORT);
     sfbp_session_t sfbp_session;
     

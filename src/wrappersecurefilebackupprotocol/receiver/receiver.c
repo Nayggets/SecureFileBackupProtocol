@@ -1,6 +1,7 @@
 #include "receiver.h"
 int receivestation(sfbp_session_t* sfbp_session,int in_restoration)
 {
+
     paquet_t paquet;
     paquet.type_paquet = 0;
     int check = 0;
@@ -36,7 +37,6 @@ int receivestation(sfbp_session_t* sfbp_session,int in_restoration)
         if(check <= 0){
             return -1;
         }
-        printf("paquet type %d\n",paquet.type_paquet);
 
     }
 
@@ -46,9 +46,6 @@ int receivestation(sfbp_session_t* sfbp_session,int in_restoration)
 int file_exists_and_no_mod (file_t* file) {
     struct stat   buffer;   
     if(stat (file->path, &buffer) == 0){
-        printf("file exist \n\r");
-        printf("Temps fichier serveur = %s\n\r", ctime(&buffer.st_mtime));
-        printf("Temps fichier client = %s\n\r", ctime(&file->last_mod));
 
         if(buffer.st_mtime < file->last_mod){
 
@@ -56,8 +53,6 @@ int file_exists_and_no_mod (file_t* file) {
         }
     }
     else{
-        printf("file not exist\n\r");
-            fflush(stdout);
 
         return 1;
     }
@@ -107,14 +102,13 @@ int receivefile(sfbp_session_t* sfbp_session,int in_restoration)
                     return -1;
                 }
             }
-            if(diff != 0){
+            if(diff != 0 && readed_byte != 0){
                 if(sfbp_session->cryption_active == 1){
                     int decryptLength = decrypt(file_data_buffer,readed_byte,sfbp_session->key,sfbp_session->iv,decipher_data_buffer);
                     if(decryptLength == -1){
                         perror("decrypt");
                     }
-                    printf("crypted length %d\n\r",readed_byte);
-                    printf("decrypted length%d\n\r",decryptLength);
+
                     int writed_byte = write(fd,decipher_data_buffer,decryptLength);
                     if(writed_byte <= 0){
                         perror("write");

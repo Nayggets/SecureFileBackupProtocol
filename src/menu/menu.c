@@ -33,15 +33,14 @@ int file_exists (char *filename) {
 void menu(sfbp_session_t* sfbp_session)
 {
     int check = 0;
-    printf("HERE\n");
     fflush(stdout);
     if(!file_exists("userkey.key")){
-        printf("Entrer une phrase attention il faut vous souvenir de cette phrase en cas de changement de machine ou remise a 0 de cette dernière : ");
+        printf("Enter a sentence. Please remember this sentence in the event of a machine change or reset to 0 : ");
         fflush(stdout);
         char message[256];
         int size = read(1,message,256);
         message[size] = '\0';
-        digest_message((unsigned char*)message,29,(unsigned char**)&sfbp_session->key,(unsigned int*)&size);
+        digest_message((unsigned char*)message,size,(unsigned char**)&sfbp_session->key,(unsigned int*)&size);
         int fd = open("userkey.key",O_WRONLY | O_CREAT,0700);
         check = write(fd,sfbp_session->key,32);
     }
@@ -51,11 +50,16 @@ void menu(sfbp_session_t* sfbp_session)
     }
     unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                           0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
-                        };
+                        }; // IV est a ce jour en dur . L'iv devait a la base etre une variable d'environnement choisis lors de la mise en production mais par manque de temps reste en dur dans le code
     memcpy(sfbp_session->iv,iv,16);
     sfbp_session->cryption_active = 1;
     char number[2];
     char path[PATH_MAX];
+    // On lance le menu du choix
+
+    if(autosend(sfbp_session) == -1){
+        printf("Erreur de la sauvegarde automatique");
+    }
     while(atoi(number) != QUIT)
     {
         printf("what do you want to do?\n");
@@ -76,18 +80,23 @@ void menu(sfbp_session_t* sfbp_session)
                 printf("Enter the path of the fichier : ");
                 fflush(stdout);
                 read_line(path);
-                sendfile(sfbp_session,path);
+                if(sendfile(sfbp_session,path) == -1){
+                    printf("Server indisponible\n");
+                }
                 break;
             }
             case SEND_FOLDER:
             {
                 printf("Enter the path of the folder : ");
                 read_line(path);
-                sendfolder(sfbp_session,path);
+                if(sendfolder(sfbp_session,path)){
+                    printf("Server indisponible\n");
+                }
                 break;
             }
             case RESTITUTE_FILE:
             {
+                printf("Enter the path of the fichier : ");
                 askforfile(sfbp_session->ssl);
                 receivestation(sfbp_session,1);
 
@@ -95,6 +104,7 @@ void menu(sfbp_session_t* sfbp_session)
             }
             case RESTITUTE_FOLDER:
             {
+                printf("Enter the path of the folder : ");
                 askforfolder(sfbp_session->ssl);
                 receivestation(sfbp_session,1);
 
